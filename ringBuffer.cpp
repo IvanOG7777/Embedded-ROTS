@@ -1,82 +1,96 @@
 #include <iostream>
 #include <cstdint>
 
-constexpr uint8_t BUFFER_SIZE = 10;
+constexpr uint8_t BUFFER_SIZE = 10; // Global buffer size
 
+// Ring buffer class
 class RingBuffer {
 public:
+    // index trackers to move along the buffer
     uint8_t head;
     uint8_t tail;
     uint8_t count;
-public:
-    uint8_t buffer[BUFFER_SIZE] = {0};
+    uint8_t buffer[BUFFER_SIZE] = {0}; // init buffer to be an array of uint8_t of size BUFFER_SIZE,
 
-public:
-    RingBuffer() : head(0), tail(0), count(0){}
+    RingBuffer() : head(0), tail(0), count(0){} // class constructor,
 
+    // function to check if buffer is full
+    // no parameters
     bool isFull() {
         return count == BUFFER_SIZE;
     }
 
+    // function to check if buffer is empty;
+    // no parameters
     bool isEmpty() {
         return count == 0;
     }
 
-    // rejects on full new numbers;
+    // function to write into the buffer, hard stops when buffer is full
+    // Parameters: uint8_t
     uint8_t write(uint8_t value) {
-        if (isFull()) {
+        if (isFull()) { // check if buffer is full
             std:: cout << "Buffer is full" << std:: endl;
-            return 0;
+            return 0; // "failure to input"
         }; // signals that buffer is full
 
-        buffer[tail] = value; // writes into the buffer
+        buffer[tail] = value; // writes into the buffer at index tail
         tail = (tail + 1) % BUFFER_SIZE; // moves index plus 1, wraps back to 0 once tail is equal to BUFFER_SIZE
         count++;
-        return 1; // success input
+        return 1; // successful input
     }
 
+    // function that also writes into buffer, but doesn't care if buffer is full, overwrites previous data.
+    // Parameters: uint8_t
     uint8_t overwrite(uint8_t value) {
-        if (isFull()) {
-            buffer[tail] = value;
+        if (isFull()) { // checks if buffer is full
+            buffer[tail] = value; // overwrites buffer at tail index
+            // moves head and tail up an index
             head = (head + 1) % BUFFER_SIZE;
             tail = (tail + 1) % BUFFER_SIZE;
-        } else {
+        } else { // if not full, treat as write()
             buffer[tail] = value;
             tail = (tail + 1) % BUFFER_SIZE;
             count++;
         }
-        return 1;
+        return 1;  // successful input
     }
 
-    // essentially resets head, tail, count when reading from stream
+    // function to read from buffer
+    // Parameters: uint8_t
     uint8_t read(uint8_t &value) {
-        if (isEmpty()) {
+        if (isEmpty()) { // check if buffer is empty
             std:: cout << "Buffer is empty" << std:: endl;
             return 0;
         }
 
+        // pass values from head index to value's address
         value = buffer[head];
-        head = (head + 1) % BUFFER_SIZE;
+        head = (head + 1) % BUFFER_SIZE; // move head up
         count--;
         return 1;
     }
 
+    // function used to peal element at current head
     uint8_t peekHead() {
-        if (count == 0) return 0;
+        if (isEmpty()) return 0; // returns early if buffer is empty
         return buffer[head];
     }
 
     uint8_t peekTail() {
-        if (count == 0) return 0;
+        if (isEmpty()) return 0; // returns early if buffer is empty
         return buffer[tail];
     }
 
+    // function to "flush" the buffer
     void flush() {
+        // reset the indices back to front of buffer and reset count
         head = 0;
         tail = 0;
         count = 0;
     }
 
+    // function used to show available slots in the buffer
     uint8_t availableSlots() {
         return BUFFER_SIZE - count;
     }
