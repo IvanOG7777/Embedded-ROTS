@@ -1,7 +1,10 @@
+//
+// Created by elder on 3/27/2026.
+//
+
 #include <iostream>
 #include <cstdint>
 
-constexpr uint8_t BUFFER_SIZE = 10; // Global buffer size
 
 // Ring buffer class
 class RingBuffer {
@@ -10,9 +13,26 @@ public:
     uint8_t head;
     uint8_t tail;
     uint8_t count;
-    uint8_t buffer[BUFFER_SIZE] = {0}; // init buffer to be an array of uint8_t of size BUFFER_SIZE,
+    uint8_t BUFFER_SIZE;
+    uint8_t *buffer;
 
-    RingBuffer() : head(0), tail(0), count(0){} // class constructor,
+    RingBuffer() : head(0), tail(0), count(0), BUFFER_SIZE(10) {
+        buffer = new uint8_t[BUFFER_SIZE]{0};
+    } // class constructor,
+
+    RingBuffer(uint8_t passedBufferSize) : head(0), tail(0), count(0), buffer(nullptr) {
+        buffer = new uint8_t[passedBufferSize]{0};
+        BUFFER_SIZE = passedBufferSize;
+    } // class constructor,
+
+    ~RingBuffer() {
+        delete []buffer;
+    }
+
+    void deleteBuffer() {
+        std:: cout << "Buffer pointer array deleted" << std:: endl;
+        delete[] buffer;
+    }
 
     // function to check if buffer is full
     // no parameters
@@ -100,7 +120,7 @@ public:
 
 int main() {
 
-    RingBuffer ringBuffer;
+    RingBuffer ringBuffer(10);
     uint8_t value = 1;
     uint8_t readValue;
 
@@ -126,10 +146,6 @@ int main() {
     std:: cout << "Count: " << static_cast<int>(ringBuffer.count) << std:: endl;
 
     ringBuffer.flush();
-
-    for (auto &val : ringBuffer.buffer) {
-        std:: cout << static_cast<int>(val) << " ";
-    }
 
     uint8_t newValue = 20;
     while (ringBuffer.write(newValue++));
