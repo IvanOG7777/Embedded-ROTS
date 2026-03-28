@@ -29,16 +29,18 @@ uint8_t* TX(uint8_t value) {
     bitArray[0] = 0;
     bitArray[9] = 1;
     for (int i = 0; i < 8; i++) {
-        bitArray[i+1] = ((value >> i) & 1);
+        bitArray[i+1] = ((value >> i) & 00000001); // right shift value by i times, do & comparison with 1
     }
     return bitArray; // returns as LSB
 }
 
 
 
+
+
 int main() {
 
-    uint8_t *array = TX(255);
+    uint8_t *array = TX(15);
     for (int i = 0; i < 10; i++) {
         std:: cout << static_cast<int>(array[i]);
     }
