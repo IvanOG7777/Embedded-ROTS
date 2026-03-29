@@ -18,6 +18,16 @@ uint8_t bitArray[10];
 
 uint8_t count = 0;
 
+
+bool write(uint8_t value) {
+    if (count == BUFFER_SIZE) return false;
+
+    buffer[tail] = value;
+    tail = (tail + 1) % BUFFER_SIZE;
+    count++;
+    return true;
+}
+
 //transmitter
 uint8_t* TX(uint8_t value) {
     bitArray[0] = 0;
@@ -39,9 +49,7 @@ bool RX(uint8_t *bitArray) {
         reassembledValue = reassembledValue  | (bitArray[i + 1] << i);
     }
 
-    std:: cout << std:: endl;
-    std:: cout << static_cast<int>(reassembledValue) << std::endl;
-    return true;
+    return write(reassembledValue);
 }
 
 
@@ -49,13 +57,16 @@ int main() {
 
     std:: cout << BIT_PERIOD << std:: endl;
     std:: cout << MID_POINT << std:: endl;
-    uint8_t *array = TX(15);
-    for (int i = 0; i < 10; i++) {
-        std:: cout << static_cast<int>(array[i]);
+    for (int i = 0; i < BUFFER_SIZE; i++) {
+        uint8_t val = i;
+        uint8_t *array = TX(val++);
+        RX(array);
     }
-    std:: cout << std:: endl;
-    std:: cout <<"Bit set: " << std::bitset<8>(15) << std:: endl;
-    RX(array);
+
+    for (int i = 0; i < BUFFER_SIZE; i++) {
+        std:: cout << static_cast<int>(buffer[i]) << " ";
+    }
+
     delete[] buffer;
     return 0;
 }
