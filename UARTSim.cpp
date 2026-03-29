@@ -11,7 +11,7 @@ constexpr uint16_t BAUD_RATE = 9600;
 double BIT_PERIOD = 1.0 / BAUD_RATE;
 double MID_POINT = BIT_PERIOD / 2;
 
-uint8_t *buffer;
+uint8_t *buffer = new uint8_t[BUFFER_SIZE]{0};
 uint8_t head = 0;
 uint8_t tail = 0;
 uint8_t bitArray[10];
@@ -45,7 +45,6 @@ bool RX(uint8_t *bitArray) {
     uint8_t reassembledValue = 0;
 
     for (int i = 0; i < 8; i++) {
-        std:: cout << static_cast<int>(bitArray[i + 1]);
         reassembledValue = reassembledValue  | (bitArray[i + 1] << i);
     }
 
@@ -57,10 +56,10 @@ int main() {
 
     std:: cout << BIT_PERIOD << std:: endl;
     std:: cout << MID_POINT << std:: endl;
+
     for (int i = 0; i < BUFFER_SIZE; i++) {
-        uint8_t val = i;
-        uint8_t *array = TX(val++);
-        RX(array);
+        uint8_t *bits = TX(i + 1);
+        RX(bits);
     }
 
     for (int i = 0; i < BUFFER_SIZE; i++) {
