@@ -34,11 +34,13 @@ bool RX(uint8_t *bitArray) {
     if (bitArray[0] != 0) return false; // makes use the start signal is 0
     uint8_t reassembledValue = 0;
 
-    for (int i = 1; i < 8; i++) {
-        reassembledValue = ((reassembledValue << i) | bitArray[i]);
+    for (int i = 0; i < 8; i++) {
+        std:: cout << static_cast<int>(bitArray[i + 1]);
+        reassembledValue = reassembledValue  | (bitArray[i + 1] << i);
     }
-    std:: cout << "Value within RX: " << static_cast<int>(reassembledValue) << std:: endl;
 
+    std:: cout << std:: endl;
+    std:: cout << static_cast<int>(reassembledValue) << std::endl;
     return true;
 }
 
@@ -52,7 +54,7 @@ int main() {
         std:: cout << static_cast<int>(array[i]);
     }
     std:: cout << std:: endl;
-    std:: cout << std::bitset<8>(15) << std:: endl;
+    std:: cout <<"Bit set: " << std::bitset<8>(15) << std:: endl;
     RX(array);
     delete[] buffer;
     return 0;
