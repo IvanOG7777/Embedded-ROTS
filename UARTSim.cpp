@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include <bits/stdc++.h>
+#include <cstdint>
 #include <thread>
 
 constexpr uint8_t BUFFER_SIZE = 26;
