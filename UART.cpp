@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <thread>
 
-constexpr uint8_t BUFFER_SIZE = 5;
+constexpr uint8_t BUFFER_SIZE = 10;
 constexpr uint8_t BIT_ARRAY_SIZE = 10;
 
 // constexpr uint16_t BAUD_RATE = 9600;
@@ -30,6 +30,7 @@ std::atomic<bool> write(uint8_t value) {
 
     buffer[tail] = value;
     tail = (tail + 1) % BUFFER_SIZE;
+    std:: cout << "Count: " << static_cast<int>(count) << " " << static_cast<int>(count.load()) << std:: endl;
     count++;
 
     return true;
@@ -57,7 +58,7 @@ void TX(uint8_t value) {
     for (int i = 0; i < BIT_ARRAY_SIZE; i++) {
         wire = bitArray[i];
         std::this_thread::sleep_for(std::chrono::duration<double>(BIT_PERIOD));
-        std:: cout << "Wire: " << static_cast<int>(wire) << " " << static_cast<int>(wire.load()) << std:: endl;
+        std:: cout << "Wire: " << static_cast<int>(wire) << std:: endl;
     }
 }
 
@@ -81,7 +82,7 @@ int main() {
 
     uint8_t value = 1;
     uint8_t readValue = 0;
-    while (value <= 5) {
+    while (count < BUFFER_SIZE) {
         std::thread txThread(TX, value++);
         std::thread rxThread(RX);
 
