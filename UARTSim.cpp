@@ -9,17 +9,12 @@
 constexpr uint8_t BUFFER_SIZE = 26;
 constexpr uint8_t BIT_ARRAY_SIZE = 10;
 
-constexpr uint16_t BAUD_RATE = 9600;
-double BIT_PERIOD = 0.1;
-double MID_POINT = BIT_PERIOD / 2;
-
 uint8_t *buffer = new uint8_t[BUFFER_SIZE]{0};
 uint8_t head = 0;
 uint8_t tail = 0;
-uint8_t count = 0;
+volatile uint8_t count = 0;
 
 uint8_t bitArray[BIT_ARRAY_SIZE];
-std::atomic<uint8_t> wire = 1;
 
 
 bool write(uint8_t value) {
@@ -40,75 +35,47 @@ bool read(uint8_t &readValue) {
     return true;
 }
 
-// //transmitter
-// uint8_t *TX(const uint8_t value) {
-//     bitArray[0] = 0;
-//     bitArray[9] = 1;
-//     for (int i = 0; i < 8; i++) {
-//         bitArray[i+1] = ((value >> i) & 00000001); // right shift value by i times, do & comparison with 1
-//     }
-//
-//     for (uint8_t i : bitArray) {
-//         wire = i;
-//         std:: this_thread::sleep_for(std::chrono::duration<double>(BIT_PERIOD));
-//     }
-//     return &wire; // returns as LSB
-// }
-
-void STX(const uint8_t value) {
+//transmitter function
+// pass in unsinged 8-bit number
+// function will strip bits from passed number into a bit array, adding start/stop buffer bits
+uint8_t *TX(const uint8_t value) {
     bitArray[0] = 0;
     bitArray[9] = 1;
     for (int i = 0; i < 8; i++) {
         bitArray[i+1] = ((value >> i) & 00000001); // right shift value by i times, do & comparison with 1
     }
 
-    // looping through bitArray with buffers already set
-    for (uint8_t i = 0; i < 10; i++) {
-        wire = bitArray[i];
-        std:: cout << "Wire: " << static_cast<int>(wire) << std:: endl;
-        std::this_thread::sleep_for(std::chrono::duration<double>(BIT_PERIOD));
-    }
-}
+    return bitArray; // returns as full 10 bit array as LSB
+} // technically it isn't "transmitting" like real UART, since it's only supposed to send bits through a wire
 
-void SRX() {
-    while (wire == 1) {
-        std:: cout << "Waiting on init 0 bit" << std:: endl;
-    }
-    std:: cout << "Seen starting 0 bit: " << std:: endl;
-    uint8_t reassembledValue = 0;
-    std::this_thread::sleep_for(std::chrono::duration<double>(MID_POINT));
+//receiver function
+// pass in pointer to the bit array TX sends out
+bool RX(const uint8_t *passedBitArray) {
+    if (count == BUFFER_SIZE) return false; // if buffer is already full reject
+    if (passedBitArray[0] != 0) return false; // makes use the start signal is 0
+    if (passedBitArray[9] != 1) return false; // makes sure the stop signal is 1
+    uint8_t reassembledValue = 0; // dummy value used to reshift bits into
+
+    // loop though the byte within the bit array
+    //technically this part is also not true to UART
     for (int i = 0; i < 8; i++) {
-        std::this_thread::sleep_for(std::chrono::duration<double>(BIT_PERIOD));
-        reassembledValue = reassembledValue  | (wire << i);
+        reassembledValue = reassembledValue  | (passedBitArray[i + 1] << i);
     }
 
-    write(reassembledValue);
-}
-
-
-// bool RX(const uint8_t *passedBitArray) {
-//     if (count == BUFFER_SIZE) return false; // if buffer is already full reject
-//     if (passedBitArray[0] != 0) return false; // makes use the start signal is 0
-//     if (passedBitArray[9] != 1) return false;
-//     uint8_t reassembledValue = 0;
-//
-//     for (int i = 0; i < 8; i++) {
-//         reassembledValue = reassembledValue  | (passedBitArray[i + 1] << i);
-//     }
-//
-//     return write(reassembledValue);
-// }
+    return write(reassembledValue); // try to write the reconstructed value into the buffer, will return T OR F
+} // technically it isn't "receiving" like real UART, since it's only supposed to read one bit at a time through a "wire" send from TX
 
 
 int main() {
 
-    std::thread txThread(STX, 77);
-    std::thread rxThread(SRX);
-
-    txThread.join();
-    rxThread.join();
-
     uint8_t readValue = 0;
+
+    // fake simulation
+    while (count != BUFFER_SIZE) {
+        auto bits = TX(readValue++);
+        RX(bits);
+    }
+
     while (read(readValue)) {
         std::cout << "Buffer value: " << static_cast<int>(readValue) << std::endl;
     }
