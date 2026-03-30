@@ -30,7 +30,7 @@ std::atomic<bool> write(uint8_t value) {
 
     buffer[tail] = value;
     tail = (tail + 1) % BUFFER_SIZE;
-    std:: cout << "Count: " << static_cast<int>(count) << " " << static_cast<int>(count.load()) << std:: endl;
+    std::cout << "Count: " << static_cast<int>(count) << " " << static_cast<int>(count.load()) << std::endl;
     count++;
 
     return true;
@@ -52,22 +52,23 @@ void TX(uint8_t value) {
     bitArray[0] = 0;
     bitArray[9] = 1;
     for (int i = 0; i < 8; i++) {
-        bitArray[i+1] = ((value >> i) & 1);
+        bitArray[i + 1] = ((value >> i) & 1);
     }
 
     for (int i = 0; i < BIT_ARRAY_SIZE; i++) {
         wire = bitArray[i];
         std::this_thread::sleep_for(std::chrono::duration<double>(BIT_PERIOD));
-        std:: cout << "Wire: " << static_cast<int>(wire) << std:: endl;
+        std::cout << "Wire: " << static_cast<int>(wire) << std::endl;
     }
 }
 
 void RX() {
-    while (wire == 1) { // while the wire is in high state keep waiting
-        std:: cout << "WAITING ON START BIT" << std:: endl;
+    while (wire == 1) {
+        // while the wire is in high state keep waiting
+        std::cout << "WAITING ON START BIT" << std::endl;
         std::this_thread::sleep_for(std::chrono::duration<double>(MID_POINT));
     } // break once wire lowers
-    std:: cout << "SEEN STARTING BIT" << std:: endl;
+    std::cout << "SEEN STARTING BIT" << std::endl;
     uint8_t reassembledValue = 0;
     std::this_thread::sleep_for(std::chrono::duration<double>(MID_POINT));
     for (int i = 0; i < 8; i++) {
@@ -79,7 +80,6 @@ void RX() {
 }
 
 int main() {
-
     uint8_t value = 1;
     uint8_t readValue = 0;
     while (count < BUFFER_SIZE) {
@@ -91,7 +91,7 @@ int main() {
     }
 
     while (read(readValue)) {
-        std:: cout << static_cast<int>(readValue) << " ";
+        std::cout << static_cast<int>(readValue) << " ";
     }
     return 0;
 }
