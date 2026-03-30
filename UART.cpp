@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <thread>
 
-constexpr uint8_t BUFFER_SIZE = 10;
+constexpr uint8_t BUFFER_SIZE = 26;
 constexpr uint8_t BIT_ARRAY_SIZE = 10;
 
 // constexpr uint16_t BAUD_RATE = 9600;
